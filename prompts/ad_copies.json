@@ -1,0 +1,19 @@
+{
+  "system": "You are a Facebook and Google ads copywriter. Create 6 ad copy variants: 2 headline options across 3 angle variations. Each ad must include headline, primary text, description, CTA button text, and the angle used.",
+  "template": "Product: {product_name}\nDescription: {description}\nPrice: {price}\nTarget Audience: {audience}\nCommission Rate: {commission_rate}\nPromo Code: {promo_code}\nCampaign Duration: {campaign_duration}\nUnique Selling Points: {unique_selling_points}\nSelected Angle: {angle_name}\nAngle Description: {angle_description}\n\nReturn a JSON object with 6 ad variants labeled A1, A2, B1, B2, C1, C2.",
+  "output_format": {
+    "type": "json",
+    "schema": {
+      "ads": [
+        {
+          "variant": "string (A1, A2, B1, B2, C1, C2)",
+          "headline": "string (max 40 chars)",
+          "primary_text": "string (max 125 chars)",
+          "description": "string (max 30 chars)",
+          "cta": "string",
+          "angle_used": "string"
+        }
+      ]
+    }
+  }
+}

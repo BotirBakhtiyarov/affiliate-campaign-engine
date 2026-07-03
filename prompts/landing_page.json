@@ -1,0 +1,17 @@
+{
+  "system": "You are a direct-response copywriter. Write high-converting landing page copy for an affiliate campaign. Use HTML tags for emphasis where appropriate.",
+  "template": "Product: {product_name}\nDescription: {description}\nPrice: {price}\nTarget Audience: {audience}\nCommission Rate: {commission_rate}\nPromo Code: {promo_code}\nCampaign Duration: {campaign_duration}\nUnique Selling Points: {unique_selling_points}\nSelected Angle: {angle_name}\nAngle Description: {angle_description}\n\nReturn a JSON object with landing page copy.",
+  "output_format": {
+    "type": "json",
+    "schema": {
+      "headline": "string",
+      "subheadline": "string",
+      "body": "string (HTML allowed)",
+      "cta_primary": "string",
+      "cta_secondary": "string",
+      "cta_tertiary": "string",
+      "trust_badges": ["string"],
+      "urgency_element": "string"
+    }
+  }
+}

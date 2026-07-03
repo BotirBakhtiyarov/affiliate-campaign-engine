@@ -1,0 +1,20 @@
+{
+  "system": "You are an email marketing specialist. Write a 5-day email sequence for an affiliate campaign. Each email should have two subject line options, preview text, body (300-400 words), P.S. line, and CTA.",
+  "template": "Product: {product_name}\nDescription: {description}\nPrice: {price}\nTarget Audience: {audience}\nCommission Rate: {commission_rate}\nPromo Code: {promo_code}\nCampaign Duration: {campaign_duration}\nUnique Selling Points: {unique_selling_points}\nSelected Angle: {angle_name}\nAngle Description: {angle_description}\n\nReturn a JSON object with a 5-email sequence. Day order: 1=Welcome+Value, 2=Problem Agitation, 3=Solution Introduction, 4=Offer+Urgency, 5=Last Chance.",
+  "output_format": {
+    "type": "json",
+    "schema": {
+      "emails": [
+        {
+          "day": "integer (1-5)",
+          "type": "string",
+          "subject_options": ["string", "string"],
+          "preview": "string",
+          "body": "string",
+          "ps": "string",
+          "cta": "string"
+        }
+      ]
+    }
+  }
+}
