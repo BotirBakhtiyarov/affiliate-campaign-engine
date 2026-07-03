@@ -1,7 +1,8 @@
 import streamlit as st
 
 
-def render_brief_form():
+def render_brief_form() -> tuple[dict[str, str], bool]:
+    """Render the campaign brief form and return the brief dict plus completion flag."""
     st.header("📝 Campaign Brief")
 
     with st.form("brief_form"):
@@ -21,18 +22,21 @@ def render_brief_form():
         submitted = st.form_submit_button("🔍 Analyze Brief")
 
     brief = {
-        "product_name": product_name,
-        "description": description,
-        "price": price,
-        "audience": audience,
-        "commission_rate": commission_rate,
-        "promo_code": promo_code,
-        "campaign_duration": campaign_duration,
-        "unique_selling_points": unique_selling_points,
-        "competitor_notes": competitor_notes,
+        "product_name": product_name.strip(),
+        "description": description.strip(),
+        "price": price.strip(),
+        "audience": audience.strip(),
+        "commission_rate": commission_rate.strip(),
+        "promo_code": promo_code.strip(),
+        "campaign_duration": campaign_duration.strip(),
+        "unique_selling_points": unique_selling_points.strip(),
+        "competitor_notes": competitor_notes.strip(),
     }
 
     required_fields = ["product_name", "description", "price", "audience", "commission_rate", "campaign_duration", "unique_selling_points"]
     is_complete = all(brief[field].strip() for field in required_fields)
+
+    if submitted and not is_complete:
+        st.error("Please fill in all required fields.")
 
     return brief, submitted and is_complete
