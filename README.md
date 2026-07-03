@@ -27,6 +27,8 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
+4. Enter your API key in the sidebar and click **Save Settings**.
+
 ## Testing
 
 ```bash
@@ -52,5 +54,7 @@ api_key = "..."
 [google]
 api_key = "..."
 ```
+
+You can also paste API keys manually in the sidebar when running the app.
 
 4. Click **Deploy**.

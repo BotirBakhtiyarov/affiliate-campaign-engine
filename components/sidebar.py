@@ -6,14 +6,24 @@ from utils.llm_clients import DEFAULT_MODELS, generate_content
 PROVIDERS = ["OpenAI", "Anthropic", "DeepSeek", "Google"]
 
 
+def _get_api_key_from_secrets(provider: str) -> str:
+    """Load API key from st.secrets if available."""
+    provider_key = provider.lower().replace(" ", "_")
+    secrets = st.secrets.get(provider_key, {})
+    if isinstance(secrets, dict):
+        return secrets.get("api_key", "")
+    return ""
+
+
 def render_sidebar():
     """Render the settings sidebar and return the selected provider and API key."""
     st.sidebar.title("⚙️ Settings")
 
     provider = st.sidebar.radio("LLM Provider", PROVIDERS, index=PROVIDERS.index(st.session_state.get("api_provider", "OpenAI")))
+    default_api_key = st.session_state.get("api_key") or _get_api_key_from_secrets(provider)
     api_key = st.sidebar.text_input(
         f"{provider} API Key",
-        value=st.session_state.get("api_key", ""),
+        value=default_api_key,
         type="password",
         help="Your API key is used only for this session and is never logged.",
     )
