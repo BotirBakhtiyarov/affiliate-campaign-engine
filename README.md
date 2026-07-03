@@ -18,16 +18,33 @@ A Streamlit web app for generating coordinated affiliate marketing content acros
 
 ## Local Setup
 
+1. Clone the repo:
+
 ```bash
 git clone <repo-url>
 cd affiliate-campaign-engine
+```
+
+2. Create and activate a virtual environment:
+
+```bash
 python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
+```
+
+3. Install dependencies:
+
+```bash
 pip install -r requirements.txt
+```
+
+4. Run the app:
+
+```bash
 streamlit run app.py
 ```
 
-4. Enter your API key in the sidebar and click **Save Settings**.
+5. Enter your API key in the sidebar and click **Save Settings**.
 
 ## Testing
 
@@ -58,6 +75,6 @@ api_key = "..."
 api_key = "..."
 ```
 
-You can also paste API keys manually in the sidebar when running the app.
-
 4. Click **Deploy**.
+
+You can also paste API keys manually in the sidebar when running the app.
