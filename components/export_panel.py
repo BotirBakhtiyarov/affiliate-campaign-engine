@@ -4,6 +4,7 @@ from typing import Any
 
 import streamlit as st
 
+from utils.csv_export import generate_ads_csv
 from utils.utm_builder import build_utm_url
 
 
@@ -77,8 +78,8 @@ def _to_markdown(brief: dict[str, Any], angle: dict[str, Any] | None, campaign: 
     return "\n".join(lines)
 
 
-def _render_utm_builder(brief: dict[str, Any]) -> None:
-    """Render the UTM link builder section."""
+def _render_utm_builder(brief: dict[str, Any]) -> str | None:
+    """Render the UTM link builder section and return the generated URL."""
     st.subheader("🔗 UTM Link Builder")
     base_url = st.text_input("Base URL", value="https://", key="utm_base_url")
 
@@ -119,12 +120,38 @@ def _render_utm_builder(brief: dict[str, Any]) -> None:
                 utm_term=utm_term or None,
             )
             st.code(utm_url, language="text")
+            return utm_url
         except ValueError as exc:
             st.error(f"Invalid URL: {exc}")
+    return None
+
+
+def _render_csv_export(
+    brief: dict[str, Any],
+    angle: dict[str, Any] | None,
+    campaign: dict[str, Any],
+    destination_url: str,
+) -> None:
+    """Render the CSV export section for ad platforms."""
+    st.subheader("📄 Export Ads CSV")
+    csv_data = generate_ads_csv(
+        campaign,
+        brief,
+        angle or {},
+        destination_url=destination_url,
+    )
+    filename = f"{_sanitize_filename(brief.get('product_name', 'campaign'))}_ads.csv"
+    st.download_button(
+        label="⬇️ Download Ads CSV (Meta/Google Ads)",
+        data=csv_data,
+        file_name=filename,
+        mime="text/csv",
+        key="export_ads_csv",
+    )
 
 
 def render_export_panel(brief: dict[str, Any], angle: dict[str, Any] | None, campaign: dict[str, Any]) -> None:
-    """Render the export panel with Markdown download and UTM builder."""
+    """Render the export panel with Markdown download, UTM builder, and CSV export."""
     st.header("📦 Export Campaign")
 
     markdown = _to_markdown(brief, angle, campaign)
@@ -138,4 +165,7 @@ def render_export_panel(brief: dict[str, Any], angle: dict[str, Any] | None, cam
     )
 
     st.markdown("---")
-    _render_utm_builder(brief)
+    utm_url = _render_utm_builder(brief)
+
+    st.markdown("---")
+    _render_csv_export(brief, angle, campaign, destination_url=utm_url or "")
