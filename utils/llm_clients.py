@@ -2,6 +2,8 @@ import asyncio
 import os
 
 import httpx
+import openai
+import anthropic
 from openai import AsyncOpenAI
 from anthropic import AsyncAnthropic
 
