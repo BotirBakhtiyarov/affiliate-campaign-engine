@@ -4,7 +4,7 @@ A Streamlit web app for generating coordinated affiliate marketing content acros
 
 ## Features
 
-- Multi-LLM provider support
+- Multi-LLM provider support (OpenAI, Anthropic, DeepSeek, Google Gemini, Kimi)
 - AI-powered angle analysis (3 angles + recommendation)
 - Coordinated content generation for:
   - Strategy Summary
@@ -13,6 +13,9 @@ A Streamlit web app for generating coordinated affiliate marketing content acros
   - Ad Copies (6 variants)
   - Social Media Kit (7 posts)
   - SEO Meta
+- A/B ad variant generator for rapid creative testing
+- UTM link builder for campaign tracking
+- CSV export for Meta/Google Ads bulk upload
 - Real-time preview with editable tabs
 - Markdown export
 
@@ -78,3 +81,16 @@ api_key = "..."
 4. Click **Deploy**.
 
 You can also paste API keys manually in the sidebar when running the app.
+
+## Why this tool?
+
+Media buyers spend hours writing coordinated copy for ads, landing pages, emails, and social posts across multiple platforms. This tool turns a single product brief into a full campaign brief and ad-ready assets in seconds, cutting creative production time and keeping messaging consistent across every channel.
+
+## What's next?
+
+If this were a full-time role, the next builds would be:
+
+- Direct Meta Marketing API integration to create campaigns, ad sets, and ads without leaving the app.
+- Google Ads and TikTok Ads API connectors for cross-platform publishing.
+- Performance dashboard that pulls spend/conversion data and surfaces winning creative.
+- Automated A/B test runner with statistical significance alerts.
