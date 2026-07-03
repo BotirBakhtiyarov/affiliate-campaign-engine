@@ -8,10 +8,13 @@ PROVIDERS = ["OpenAI", "Anthropic", "DeepSeek", "Google", "Kimi"]
 
 def _get_api_key_from_secrets(provider: str) -> str:
     """Load API key from st.secrets if available."""
-    provider_key = provider.lower().replace(" ", "_")
-    secrets = st.secrets.get(provider_key, {})
-    if isinstance(secrets, dict):
-        return secrets.get("api_key", "")
+    try:
+        provider_key = provider.lower().replace(" ", "_")
+        secrets = st.secrets.get(provider_key, {})
+        if isinstance(secrets, dict):
+            return secrets.get("api_key", "")
+    except Exception:
+        pass
     return ""
 
 
