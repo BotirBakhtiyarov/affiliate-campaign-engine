@@ -4,12 +4,30 @@ from typing import Any
 
 import streamlit as st
 
+from utils.utm_builder import build_utm_url
+
 
 def _sanitize_filename(name: str) -> str:
     """Sanitize a string for use as a filename."""
     safe = re.sub(r"[^\w\s-]", "", name).strip().lower()
     safe = re.sub(r"[-\s]+", "_", safe)
     return safe or "campaign"
+
+
+def _slugify(name: str) -> str:
+    """Convert a string to a URL-friendly slug."""
+    safe = re.sub(r"[^\w\s-]", "", name).strip().lower()
+    safe = re.sub(r"[-\s]+", "_", safe)
+    return safe or "campaign"
+
+
+def _default_utm_campaign(brief: dict[str, Any]) -> str:
+    """Build a default UTM campaign name from the brief."""
+    campaign = _slugify(brief.get("product_name", "campaign"))
+    duration = _slugify(brief.get("campaign_duration", ""))
+    if duration:
+        campaign = f"{campaign}_{duration}"
+    return campaign
 
 
 def _to_markdown(brief: dict[str, Any], angle: dict[str, Any] | None, campaign: dict[str, Any]) -> str:
@@ -22,9 +40,9 @@ def _to_markdown(brief: dict[str, Any], angle: dict[str, Any] | None, campaign: 
         "",
         "## Brief",
         f"- **Product:** {brief.get('product_name', '')}",
-        f"- **Description:** {brief.get('description', '')}",
+        f"- **Description:** {brief.get('product_description', '')}",
         f"- **Price:** {brief.get('price', '')}",
-        f"- **Audience:** {brief.get('audience', '')}",
+        f"- **Audience:** {brief.get('target_audience', '')}",
         f"- **Commission:** {brief.get('commission_rate', '')}",
         f"- **Promo Code:** {brief.get('promo_code', '')}",
         f"- **Duration:** {brief.get('campaign_duration', '')}",
@@ -59,9 +77,56 @@ def _to_markdown(brief: dict[str, Any], angle: dict[str, Any] | None, campaign: 
     return "\n".join(lines)
 
 
+def _render_utm_builder(brief: dict[str, Any]) -> None:
+    """Render the UTM link builder section."""
+    st.subheader("🔗 UTM Link Builder")
+    base_url = st.text_input("Base URL", value="https://", key="utm_base_url")
+
+    col1, col2 = st.columns(2)
+    with col1:
+        utm_source = st.selectbox(
+            "Source",
+            ["meta", "google", "tiktok", "taboola", "email"],
+            key="utm_source",
+        )
+    with col2:
+        utm_medium = st.selectbox(
+            "Medium",
+            ["paid_social", "cpc", "display", "email", "affiliate"],
+            key="utm_medium",
+        )
+
+    utm_campaign = st.text_input(
+        "Campaign",
+        value=_default_utm_campaign(brief),
+        key="utm_campaign",
+    )
+
+    col3, col4 = st.columns(2)
+    with col3:
+        utm_content = st.text_input("Content", value="ad_1", key="utm_content")
+    with col4:
+        utm_term = st.text_input("Term (optional)", value="", key="utm_term")
+
+    if base_url and base_url != "https://":
+        try:
+            utm_url = build_utm_url(
+                base_url,
+                utm_source=utm_source,
+                utm_medium=utm_medium,
+                utm_campaign=utm_campaign,
+                utm_content=utm_content or None,
+                utm_term=utm_term or None,
+            )
+            st.code(utm_url, language="text")
+        except ValueError as exc:
+            st.error(f"Invalid URL: {exc}")
+
+
 def render_export_panel(brief: dict[str, Any], angle: dict[str, Any] | None, campaign: dict[str, Any]) -> None:
-    """Render the export panel with a Markdown download button."""
+    """Render the export panel with Markdown download and UTM builder."""
     st.header("📦 Export Campaign")
+
     markdown = _to_markdown(brief, angle, campaign)
     filename = f"{_sanitize_filename(brief.get('product_name', 'campaign'))}_campaign.md"
     st.download_button(
@@ -71,3 +136,6 @@ def render_export_panel(brief: dict[str, Any], angle: dict[str, Any] | None, cam
         mime="text/markdown",
         key="export_campaign_markdown",
     )
+
+    st.markdown("---")
+    _render_utm_builder(brief)
