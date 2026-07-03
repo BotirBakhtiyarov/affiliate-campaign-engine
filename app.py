@@ -10,6 +10,7 @@ from components.content_display import render_content_display
 from components.export_panel import render_export_panel
 from utils.async_helpers import run_async
 from utils.session_manager import init_session, save_campaign, delete_campaign
+from utils.ab_test_generator import generate_ad_variants
 from utils.content_generator import analyze_angles, generate_full_campaign, _normalize_angle
 
 
@@ -90,9 +91,22 @@ def main():
                     logger.exception("Campaign generation failed")
                     st.error(f"Campaign generation failed: {exc}")
 
+        if st.button("🧬 Generate A/B Variants", key="generate_ab_variants_button"):
+            with st.spinner("Generating A/B test variants..."):
+                try:
+                    variants = run_async(
+                        generate_ad_variants(st.session_state["brief"], selected_angle, provider, api_key)
+                    )
+                    st.session_state["ab_variants"] = variants
+                except Exception as exc:
+                    st.session_state.pop("ab_variants", None)
+                    logger.exception("A/B variant generation failed")
+                    st.error(f"A/B variant generation failed: {exc}")
+
     if st.session_state.get("current_campaign"):
         campaign = st.session_state["current_campaign"]
-        edited_content = render_content_display(campaign["content"])
+        ab_variants = st.session_state.get("ab_variants")
+        edited_content = render_content_display(campaign["content"], ab_variants=ab_variants)
         campaign["content"] = edited_content
         render_export_panel(campaign["brief"], campaign["angle"], campaign["content"])
 
