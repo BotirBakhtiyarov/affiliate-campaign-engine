@@ -1,16 +1,26 @@
 import json
+from typing import Any
 
 import pyperclip
 import streamlit as st
 
 
-def _dict_to_text(data: dict) -> str:
+def _dict_to_text(data: Any) -> str:
+    """Serialize data to pretty JSON."""
     return json.dumps(data, indent=2, ensure_ascii=False)
 
 
-def _render_copy_download(label: str, data: dict, key: str):
-    text = _dict_to_text(data)
-    col1, col2, col3 = st.columns([1, 1, 1])
+def _parse_edited_text(text: str) -> Any:
+    """Try to parse edited text as JSON; return raw text if invalid."""
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        return text
+
+
+def _render_copy_download(label: str, text: str, key: str):
+    """Render download and copy buttons for a channel."""
+    col1, col2 = st.columns([1, 1])
     with col1:
         st.download_button(
             label=f"⬇️ Download {label}",
@@ -25,28 +35,33 @@ def _render_copy_download(label: str, data: dict, key: str):
                 pyperclip.copy(text)
                 st.success("Copied to clipboard!")
             except Exception:
-                st.info("Copy not available in this environment. Use the text area or download button.")
-    with col3:
-        st.code(text, language="json")
+                st.info("Clipboard copy is not available in this environment. Please copy manually from the text area.")
 
 
-def render_content_display(campaign: dict):
+def render_content_display(campaign: dict[str, Any], key_prefix: str = "content") -> dict[str, Any]:
+    """Render generated campaign content in editable tabs and return edited campaign."""
     st.header("📄 Generated Campaign")
 
     tab_names = ["Strategy Summary", "Landing Page", "Email Sequence", "Ad Copies", "Social Media", "SEO Meta"]
     keys = ["strategy_summary", "landing_page", "email_sequence", "ad_copies", "social_media", "seo_meta"]
 
+    edited_campaign: dict[str, Any] = {}
     tabs = st.tabs(tab_names)
     for tab, key, label in zip(tabs, keys, tab_names):
         with tab:
             data = campaign.get(key, {})
-            if "error" in data:
+            if isinstance(data, dict) and "error" in data:
                 st.error(f"Failed to generate {label}: {data['error']}")
+                edited_campaign[key] = data
             else:
-                st.text_area(
+                original_text = _dict_to_text(data)
+                edited_text = st.text_area(
                     f"Edit {label}",
-                    value=_dict_to_text(data),
+                    value=original_text,
                     height=400,
-                    key=f"edit_{key}",
+                    key=f"{key_prefix}_edit_{key}",
                 )
-                _render_copy_download(label, data, key)
+                edited_campaign[key] = _parse_edited_text(edited_text)
+                _render_copy_download(label, edited_text, f"{key_prefix}_{key}")
+
+    return edited_campaign
