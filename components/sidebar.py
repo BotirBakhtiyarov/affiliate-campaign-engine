@@ -1,19 +1,9 @@
-import asyncio
-
 import streamlit as st
+from utils.async_helpers import run_async
 from utils.llm_clients import DEFAULT_MODELS, generate_content
 
 
 PROVIDERS = ["OpenAI", "Anthropic", "DeepSeek", "Google"]
-
-
-def _run_async(coro):
-    """Run an async coroutine in a fresh event loop."""
-    loop = asyncio.new_event_loop()
-    try:
-        return loop.run_until_complete(coro)
-    finally:
-        loop.close()
 
 
 def render_sidebar():
@@ -40,7 +30,7 @@ def render_sidebar():
             with st.spinner("Testing connection..."):
                 try:
                     prompt = "Return a one-word response: 'OK'"
-                    response = _run_async(generate_content(prompt, provider, api_key))
+                    response = run_async(generate_content(prompt, provider, api_key))
                     if response.strip().upper() == "OK":
                         st.sidebar.success("Connection successful!")
                     else:
