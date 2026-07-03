@@ -60,7 +60,7 @@ affiliate-campaign-engine/
 ## Quick Start
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/BotirBakhtiyarov/affiliate-campaign-engine
 cd affiliate-campaign-engine
 python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
@@ -89,33 +89,6 @@ pytest
 ```
 
 The suite covers prompt loading, LLM dispatch, content generation, angle normalization, session management, UTM building, CSV export, and A/B variant generation.
-
-## Deploy
-
-1. Push to GitHub.
-2. Connect the repo on [Streamlit Cloud](https://streamlit.io/cloud).
-3. Add API keys under **Settings → Secrets**:
-
-```toml
-[openai]
-api_key = "..."
-
-[anthropic]
-api_key = "..."
-
-[deepseek]
-api_key = "..."
-
-[google]
-api_key = "..."
-
-[kimi]
-api_key = "..."
-```
-
-4. Click **Deploy**.
-
-You can also enter keys manually in the sidebar for local runs.
 
 ## Why This Tool?
 
