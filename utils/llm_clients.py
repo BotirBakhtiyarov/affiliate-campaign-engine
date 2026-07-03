@@ -1,9 +1,9 @@
+import asyncio
 import os
 
 import httpx
 from openai import AsyncOpenAI
 from anthropic import AsyncAnthropic
-import google.generativeai as genai
 
 
 SYSTEM_PROMPT = "You are a helpful marketing assistant. Return valid JSON only."
@@ -18,10 +18,37 @@ DEFAULT_MODELS = {
 DEEPSEEK_BASE_URL = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com/v1")
 
 
+def _is_retryable(exc: Exception) -> bool:
+    """Return True if the exception warrants a retry with backoff."""
+    if isinstance(exc, (openai.APIConnectionError, openai.RateLimitError)):
+        return True
+    if isinstance(exc, (anthropic.APIConnectionError, anthropic.RateLimitError)):
+        return True
+    if isinstance(exc, (httpx.TimeoutException, httpx.ConnectError)):
+        return True
+    if isinstance(exc, httpx.HTTPStatusError):
+        return exc.response.status_code >= 500
+    return False
+
+
+async def _with_retries(coro_func, *args, **kwargs):
+    """Run a coroutine with up to 3 attempts and exponential backoff."""
+    last_exc = None
+    for attempt in range(3):
+        try:
+            return await coro_func(*args, **kwargs)
+        except Exception as exc:
+            last_exc = exc
+            if attempt < 2 and _is_retryable(exc):
+                await asyncio.sleep(2 ** attempt)
+            else:
+                raise last_exc
+
+
 async def call_openai(prompt: str, api_key: str, model: str = DEFAULT_MODELS["OpenAI"]) -> str:
-    try:
+    async def _request():
         async with AsyncOpenAI(api_key=api_key) as client:
-            response = await client.chat.completions.create(
+            return await client.chat.completions.create(
                 model=model,
                 messages=[
                     {"role": "system", "content": SYSTEM_PROMPT},
@@ -29,6 +56,9 @@ async def call_openai(prompt: str, api_key: str, model: str = DEFAULT_MODELS["Op
                 ],
                 temperature=0.7,
             )
+
+    try:
+        response = await _with_retries(_request)
     except Exception as exc:
         raise ValueError(f"OpenAI API call failed: {exc}") from exc
 
@@ -38,15 +68,18 @@ async def call_openai(prompt: str, api_key: str, model: str = DEFAULT_MODELS["Op
 
 
 async def call_claude(prompt: str, api_key: str, model: str = DEFAULT_MODELS["Anthropic"]) -> str:
-    try:
+    async def _request():
         async with AsyncAnthropic(api_key=api_key) as client:
-            response = await client.messages.create(
+            return await client.messages.create(
                 model=model,
                 max_tokens=4096,
                 temperature=0.7,
                 system=SYSTEM_PROMPT,
                 messages=[{"role": "user", "content": prompt}],
             )
+
+    try:
+        response = await _with_retries(_request)
     except Exception as exc:
         raise ValueError(f"Anthropic API call failed: {exc}") from exc
 
@@ -56,7 +89,7 @@ async def call_claude(prompt: str, api_key: str, model: str = DEFAULT_MODELS["An
 
 
 async def call_deepseek(prompt: str, api_key: str, model: str = DEFAULT_MODELS["DeepSeek"]) -> str:
-    try:
+    async def _request():
         async with httpx.AsyncClient(timeout=60.0) as client:
             response = await client.post(
                 f"{DEEPSEEK_BASE_URL}/chat/completions",
@@ -71,7 +104,10 @@ async def call_deepseek(prompt: str, api_key: str, model: str = DEFAULT_MODELS["
                 },
             )
             response.raise_for_status()
-            data = response.json()
+            return response.json()
+
+    try:
+        data = await _with_retries(_request)
     except Exception as exc:
         raise ValueError(f"DeepSeek API call failed: {exc}") from exc
 
@@ -81,19 +117,32 @@ async def call_deepseek(prompt: str, api_key: str, model: str = DEFAULT_MODELS["
 
 
 async def call_gemini(prompt: str, api_key: str, model: str = DEFAULT_MODELS["Google"]) -> str:
+    async def _request():
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.post(
+                f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
+                params={"key": api_key},
+                json={
+                    "contents": [{"parts": [{"text": f"Return valid JSON only.\n\n{prompt}"}]}],
+                    "generationConfig": {"temperature": 0.7},
+                },
+            )
+            response.raise_for_status()
+            return response.json()
+
     try:
-        genai.configure(api_key=api_key)
-        model_obj = genai.GenerativeModel(model)
-        response = await model_obj.generate_content_async(
-            f"{SYSTEM_PROMPT}\n\n{prompt}",
-            generation_config={"temperature": 0.7},
-        )
+        data = await _with_retries(_request)
     except Exception as exc:
         raise ValueError(f"Gemini API call failed: {exc}") from exc
 
-    if not response.text:
-        raise ValueError("Gemini response missing text")
-    return response.text
+    if (
+        not data.get("candidates")
+        or not data["candidates"][0].get("content")
+        or not data["candidates"][0]["content"].get("parts")
+        or not data["candidates"][0]["content"]["parts"][0].get("text")
+    ):
+        raise ValueError("Gemini response missing content")
+    return data["candidates"][0]["content"]["parts"][0]["text"]
 
 
 async def generate_content(

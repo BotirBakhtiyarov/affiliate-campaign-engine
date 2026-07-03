@@ -9,7 +9,7 @@ from components.angle_selector import render_angle_selector
 from components.content_display import render_content_display
 from components.export_panel import render_export_panel
 from utils.async_helpers import run_async
-from utils.session_manager import init_session, save_campaign
+from utils.session_manager import init_session, save_campaign, delete_campaign
 from utils.content_generator import analyze_angles, generate_full_campaign
 
 
@@ -28,6 +28,24 @@ def main():
 
     st.title("🚀 Affiliate Campaign Engine")
     st.caption("Generate coordinated affiliate marketing content with AI")
+
+    if st.session_state.get("campaigns"):
+        st.subheader("📁 Saved Campaigns")
+        campaign_names = [f"{i+1}. {c['brief'].get('product_name', 'Untitled')}" for i, c in enumerate(st.session_state["campaigns"])]
+        selected_idx = st.selectbox("Load a saved campaign", range(len(campaign_names)), format_func=lambda i: campaign_names[i], key="load_campaign_select")
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("Load Campaign", key="load_campaign_button"):
+                loaded = st.session_state["campaigns"][selected_idx]
+                st.session_state["current_campaign"] = loaded
+                st.session_state["brief"] = loaded["brief"]
+                st.session_state["angles_data"] = {"recommended": 0, "angles": [loaded["angle"]]}
+                st.session_state["selected_angle"] = loaded["angle"]
+                st.rerun()
+        with col2:
+            if st.button("Delete Campaign", key="delete_campaign_button"):
+                delete_campaign(st.session_state, selected_idx)
+                st.rerun()
 
     provider, api_key = render_sidebar()
 
