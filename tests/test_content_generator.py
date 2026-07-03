@@ -1,7 +1,14 @@
 import json
 import pytest
 from unittest.mock import AsyncMock, patch
-from utils.content_generator import analyze_angles, generate_full_campaign
+from utils.content_generator import (
+    CHANNELS,
+    _extract_json,
+    _parse_json,
+    analyze_angles,
+    generate_channel_content,
+    generate_full_campaign,
+)
 
 
 @pytest.mark.asyncio
@@ -49,3 +56,76 @@ async def test_generate_full_campaign_returns_all_channels(tmp_path):
         )
         assert set(result.keys()) == {"strategy_summary", "landing_page", "email_sequence", "ad_copies", "social_media", "seo_meta"}
         assert all(result[ch] == {"ok": True} for ch in result)
+
+
+def test_extract_json_from_markdown_fences():
+    text = 'Some text\n```json\n{"ok": true}\n```\nMore text'
+    assert _extract_json(text) == '{"ok": true}'
+
+
+def test_extract_json_nested_object():
+    text = 'prefix {"outer": {"inner": 1}} suffix'
+    assert _extract_json(text) == '{"outer": {"inner": 1}}'
+
+
+def test_extract_json_no_json():
+    assert _extract_json("no json here") == "no json here"
+
+
+def test_parse_json_markdown_wrapped():
+    text = '```json\n{"ok": true}\n```'
+    assert _parse_json(text) == {"ok": True}
+
+
+def test_parse_json_invalid_raises():
+    with pytest.raises(ValueError, match="Could not parse JSON"):
+        _parse_json("not valid json")
+
+
+@pytest.mark.asyncio
+async def test_generate_channel_content(tmp_path):
+    prompt_dir = tmp_path / "prompts"
+    prompt_dir.mkdir()
+    (prompt_dir / "landing_page.json").write_text(json.dumps({
+        "system": "sys",
+        "template": "Brief: {product_name} Angle: {angle_name}",
+        "output_format": {"type": "json"}
+    }))
+
+    fake_response = json.dumps({"headline": "Buy Now"})
+    angle = {"name": "Angle X", "description": "Great angle"}
+    brief = {"product_name": "Widget"}
+
+    with patch("utils.content_generator.generate_content", new=AsyncMock(return_value=fake_response)) as mock:
+        result = await generate_channel_content(
+            brief, angle, "landing_page", "OpenAI", "key", prompts_dir=str(prompt_dir)
+        )
+        assert result["headline"] == "Buy Now"
+        mock.assert_awaited_once()
+        prompt_arg = mock.await_args[0][0]
+        assert "Widget" in prompt_arg
+        assert "Angle X" in prompt_arg
+
+
+@pytest.mark.asyncio
+async def test_generate_full_campaign_partial_failure(tmp_path):
+    prompt_dir = tmp_path / "prompts"
+    prompt_dir.mkdir()
+    for name in CHANNELS:
+        template = "landing_page Brief: {product_name}" if name == "landing_page" else "Brief: {product_name}"
+        (prompt_dir / f"{name}.json").write_text(json.dumps({
+            "system": "sys", "template": template, "output_format": {"type": "json"}
+        }))
+
+    async def side_effect(*args, **kwargs):
+        if "landing_page" in args[0]:
+            raise ValueError("LLM failed")
+        return '{"ok": true}'
+
+    with patch("utils.content_generator.generate_content", new=AsyncMock(side_effect=side_effect)):
+        result = await generate_full_campaign(
+            {"product_name": "Widget"}, {"name": "A", "description": "d"}, "OpenAI", "key", prompts_dir=str(prompt_dir)
+        )
+        assert result["landing_page"]["error"] == "LLM failed"
+        assert result["landing_page"]["error_type"] == "ValueError"
+        assert result["email_sequence"] == {"ok": True}

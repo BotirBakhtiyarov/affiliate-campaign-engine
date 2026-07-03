@@ -20,10 +20,23 @@ CHANNELS = [
 
 
 def _extract_json(text: str) -> str:
-    """Extract the first JSON object/array from a string."""
-    match = re.search(r"\{.*\}|\[.*\]", text, re.DOTALL)
-    if match:
-        return match.group(0)
+    """Extract JSON from markdown fences or balanced braces/arrays."""
+    fenced = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", text)
+    if fenced:
+        return fenced.group(1).strip()
+
+    for opener, closer in (("{", "}"), ("[", "]")):
+        start = text.find(opener)
+        if start == -1:
+            continue
+        depth = 0
+        for i, ch in enumerate(text[start:], start=start):
+            if ch == opener:
+                depth += 1
+            elif ch == closer:
+                depth -= 1
+                if depth == 0:
+                    return text[start : i + 1]
     return text
 
 
@@ -101,7 +114,7 @@ async def generate_full_campaign(
     campaign = {}
     for channel, result in zip(CHANNELS, results):
         if isinstance(result, Exception):
-            campaign[channel] = {"error": str(result)}
+            campaign[channel] = {"error": str(result), "error_type": type(result).__name__}
         else:
             campaign[channel] = result
     return campaign
