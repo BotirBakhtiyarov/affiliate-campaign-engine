@@ -1,0 +1,9 @@
+streamlit>=1.36.0
+openai>=1.35.0
+anthropic>=0.30.0
+google-generativeai>=0.7.0
+httpx>=0.27.0
+pyperclip>=1.8.0
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
+python-dotenv>=1.0.0
