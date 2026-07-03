@@ -13,12 +13,12 @@ def init_session(state: dict[str, Any]) -> None:
         state.setdefault(key, value)
 
 
-def save_campaign(state: dict[str, Any], campaign: dict) -> None:
+def save_campaign(state: dict[str, Any], campaign: dict[str, Any]) -> None:
     """Append a campaign to the campaigns list."""
     state["campaigns"].append(campaign)
 
 
-def get_campaign(state: dict[str, Any], index: int) -> dict:
+def get_campaign(state: dict[str, Any], index: int) -> dict[str, Any]:
     """Retrieve a campaign by index."""
     return state["campaigns"][index]
 
@@ -28,6 +28,6 @@ def delete_campaign(state: dict[str, Any], index: int) -> None:
     del state["campaigns"][index]
 
 
-def set_current_campaign(state: dict[str, Any], campaign: dict | None) -> None:
+def set_current_campaign(state: dict[str, Any], campaign: dict[str, Any] | None) -> None:
     """Set the active campaign."""
     state["current_campaign"] = campaign
