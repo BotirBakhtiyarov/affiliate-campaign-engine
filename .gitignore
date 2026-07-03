@@ -3,6 +3,16 @@
 
 # Streamlit secrets
 .secrets
+.streamlit/secrets.toml
+
+# Build artifacts
+build/
+dist/
+
+# Logs and coverage
+*.log
+.coverage
+htmlcov/
 
 # Python
 __pycache__/
