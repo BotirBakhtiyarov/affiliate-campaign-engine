@@ -1,6 +1,6 @@
 {
   "system": "You are a senior affiliate marketing strategist. Write a concise campaign strategy summary based on the selected marketing angle.",
-  "template": "Product: {product_name}\nDescription: {description}\nPrice: {price}\nTarget Audience: {audience}\nCommission Rate: {commission_rate}\nPromo Code: {promo_code}\nCampaign Duration: {campaign_duration}\nUnique Selling Points: {unique_selling_points}\nSelected Angle: {angle_name}\nAngle Description: {angle_description}\n\nReturn a JSON object with the campaign strategy summary.",
+  "template": "Product: {product_name}\nDescription: {description}\nPrice: {price}\nTarget Audience: {audience}\nCommission Rate: {commission_rate}\nPromo Code: {promo_code}\nCampaign Duration: {campaign_duration}\nUnique Selling Points: {unique_selling_points}\nSelected Angle: {angle_name}\nAngle Description: {angle_description}\n\nReturn a JSON object with the campaign strategy summary.\n\nReturn ONLY a raw, valid JSON object. Do not include markdown code fences, comments, or any text outside the JSON.",
   "output_format": {
     "type": "json",
     "schema": {

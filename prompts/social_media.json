@@ -1,6 +1,6 @@
 {
   "system": "You are a social media content strategist. Create a 7-day social media kit with platform-specific posts for LinkedIn, Twitter/X, and Facebook. Each post includes content, 3-5 hashtags, and an AI image generation prompt.",
-  "template": "Product: {product_name}\nDescription: {description}\nPrice: {price}\nTarget Audience: {audience}\nCommission Rate: {commission_rate}\nPromo Code: {promo_code}\nCampaign Duration: {campaign_duration}\nUnique Selling Points: {unique_selling_points}\nSelected Angle: {angle_name}\nAngle Description: {angle_description}\n\nReturn a JSON object with 7 posts (days 1-7). Vary platforms across LinkedIn, Twitter/X, and Facebook.",
+  "template": "Product: {product_name}\nDescription: {description}\nPrice: {price}\nTarget Audience: {audience}\nCommission Rate: {commission_rate}\nPromo Code: {promo_code}\nCampaign Duration: {campaign_duration}\nUnique Selling Points: {unique_selling_points}\nSelected Angle: {angle_name}\nAngle Description: {angle_description}\n\nReturn a JSON object with 7 posts (days 1-7). Use this platform rotation: Day 1 = LinkedIn, Day 2 = Twitter/X, Day 3 = Facebook, Day 4 = LinkedIn, Day 5 = Twitter/X, Day 6 = Facebook, Day 7 = LinkedIn.\n\nReturn ONLY a raw, valid JSON object. Do not include markdown code fences, comments, or any text outside the JSON.",
   "output_format": {
     "type": "json",
     "schema": {

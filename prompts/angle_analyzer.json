@@ -1,6 +1,6 @@
 {
   "system": "You are an expert affiliate marketing strategist with 10+ years of experience. Analyze the product brief and propose 3 high-converting marketing angles for an affiliate campaign. Each angle must have a clear name, description, rationale, and conversion potential score.",
-  "template": "Product: {product_name}\nDescription: {description}\nPrice: {price}\nTarget Audience: {audience}\nCommission Rate: {commission_rate}\nPromo Code: {promo_code}\nCampaign Duration: {campaign_duration}\nUnique Selling Points: {unique_selling_points}\nCompetitor Notes: {competitor_notes}\n\nReturn a JSON object with a recommended angle index (0, 1, or 2) and an array of 3 angles.",
+  "template": "Product: {product_name}\nDescription: {description}\nPrice: {price}\nTarget Audience: {audience}\nCommission Rate: {commission_rate}\nPromo Code: {promo_code}\nCampaign Duration: {campaign_duration}\nUnique Selling Points: {unique_selling_points}\nCompetitor Notes: {competitor_notes}\n\nReturn a JSON object with a recommended angle index (0, 1, or 2) and an array of 3 angles.\n\nReturn ONLY a raw, valid JSON object. Do not include markdown code fences, comments, or any text outside the JSON.",
   "output_format": {
     "type": "json",
     "schema": {

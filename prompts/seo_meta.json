@@ -1,6 +1,6 @@
 {
-  "system": "You are an SEO specialist. Generate search engine metadata for an affiliate landing page including title, meta description, keywords, URL slug, and JSON-LD schema markup.",
-  "template": "Product: {product_name}\nDescription: {description}\nPrice: {price}\nTarget Audience: {audience}\nCommission Rate: {commission_rate}\nPromo Code: {promo_code}\nCampaign Duration: {campaign_duration}\nUnique Selling Points: {unique_selling_points}\nSelected Angle: {angle_name}\nAngle Description: {angle_description}\n\nReturn a JSON object with SEO metadata.",
+  "system": "You are an SEO specialist. Generate search engine metadata for an affiliate landing page including title, meta description, keywords, URL slug, and JSON-LD schema markup. The schema_markup value must be a single-line string with properly escaped JSON-LD markup suitable for embedding in the outer JSON object.",
+  "template": "Product: {product_name}\nDescription: {description}\nPrice: {price}\nTarget Audience: {audience}\nCommission Rate: {commission_rate}\nPromo Code: {promo_code}\nCampaign Duration: {campaign_duration}\nUnique Selling Points: {unique_selling_points}\nSelected Angle: {angle_name}\nAngle Description: {angle_description}\n\nReturn a JSON object with SEO metadata.\n\nReturn ONLY a raw, valid JSON object. Do not include markdown code fences, comments, or any text outside the JSON.",
   "output_format": {
     "type": "json",
     "schema": {
