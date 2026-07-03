@@ -2,12 +2,14 @@ from typing import Any
 
 import streamlit as st
 
+from utils.content_generator import _normalize_angle
+
 
 def render_angle_selector(angles_data: dict[str, Any], key_prefix: str = "angle") -> dict[str, Any] | None:
     """Render angle cards and return the selected angle dictionary."""
     st.header("🎯 Select Marketing Angle")
 
-    angles = angles_data.get("angles", [])
+    angles = [_normalize_angle(a) for a in angles_data.get("angles", [])]
     if not angles:
         st.warning("No angles available.")
         return None

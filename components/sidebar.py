@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 import streamlit as st
 
@@ -9,10 +9,36 @@ from utils.llm_clients import DEFAULT_MODELS, generate_content
 PROVIDERS = ["OpenAI", "Anthropic", "DeepSeek", "Google", "Kimi"]
 
 
+def _load_toml(path: Path) -> dict:
+    """Load a TOML file in a Python-version-agnostic way."""
+    try:
+        import tomllib
+    except ImportError:  # pragma: no cover
+        import tomli as tomllib
+    with path.open("rb") as f:
+        return tomllib.load(f)
+
+
 def _get_api_key_from_secrets(provider: str) -> str:
-    """Load API key from st.secrets if available."""
-    if not os.path.exists(".streamlit/secrets.toml"):
-        return ""
+    """Load API key from the project-root secrets file or st.secrets."""
+    project_root = Path(__file__).resolve().parent.parent
+    secrets_file = project_root / ".streamlit" / "secrets.toml"
+
+    # Parse the local secrets.toml directly so we don't depend on the cwd that
+    # Streamlit's st.secrets loader uses, and so a missing/invalid file can't
+    # raise StreamlitSecretNotFoundError to the user.
+    if secrets_file.exists():
+        try:
+            data = _load_toml(secrets_file)
+            provider_key = provider.lower().replace(" ", "_")
+            secrets = data.get(provider_key, {})
+            if isinstance(secrets, dict):
+                return secrets.get("api_key", "")
+        except Exception:
+            pass
+
+    # Fallback for environments like Streamlit Cloud where secrets are injected
+    # via st.secrets and no local file exists.
     try:
         provider_key = provider.lower().replace(" ", "_")
         secrets = st.secrets.get(provider_key, {})

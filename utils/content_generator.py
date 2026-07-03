@@ -51,6 +51,30 @@ def _parse_json(text: str) -> Any:
             raise ValueError(f"Could not parse JSON from response: {text[:200]}") from exc
 
 
+def _normalize_angle(angle: Any) -> dict[str, Any]:
+    """Ensure an angle is a dict with the expected keys."""
+    if isinstance(angle, str):
+        return {
+            "name": angle,
+            "description": "",
+            "rationale": "",
+            "conversion_potential": 5,
+        }
+    if isinstance(angle, dict):
+        return {
+            "name": angle.get("name", ""),
+            "description": angle.get("description", ""),
+            "rationale": angle.get("rationale", ""),
+            "conversion_potential": angle.get("conversion_potential", 5),
+        }
+    return {
+        "name": str(angle),
+        "description": "",
+        "rationale": "",
+        "conversion_potential": 5,
+    }
+
+
 def _build_prompt(prompt_name: str, brief: dict, angle: dict | str | None, prompts_dir: Path) -> str:
     prompt_path = prompts_dir / f"{prompt_name}.json"
     prompt_data = load_prompt(prompt_path)
@@ -87,7 +111,11 @@ async def analyze_angles(
     prompts_dir = Path(prompts_dir)
     prompt_text = _build_prompt("angle_analyzer", brief, None, prompts_dir)
     raw = await generate_content(prompt_text, provider, api_key)
-    return _parse_json(raw)
+    data = _parse_json(raw)
+    data["angles"] = [_normalize_angle(a) for a in data.get("angles", [])]
+    if not isinstance(data.get("recommended"), int):
+        data["recommended"] = 0
+    return data
 
 
 async def generate_channel_content(

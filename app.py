@@ -10,7 +10,7 @@ from components.content_display import render_content_display
 from components.export_panel import render_export_panel
 from utils.async_helpers import run_async
 from utils.session_manager import init_session, save_campaign, delete_campaign
-from utils.content_generator import analyze_angles, generate_full_campaign
+from utils.content_generator import analyze_angles, generate_full_campaign, _normalize_angle
 
 
 logging.basicConfig(level=logging.INFO)
@@ -39,8 +39,9 @@ def main():
                 loaded = st.session_state["campaigns"][selected_idx]
                 st.session_state["current_campaign"] = loaded
                 st.session_state["brief"] = loaded["brief"]
-                st.session_state["angles_data"] = {"recommended": 0, "angles": [loaded["angle"]]}
-                st.session_state["selected_angle"] = loaded["angle"]
+                selected_angle = _normalize_angle(loaded["angle"])
+                st.session_state["angles_data"] = {"recommended": 0, "angles": [selected_angle]}
+                st.session_state["selected_angle"] = selected_angle
                 st.rerun()
         with col2:
             if st.button("Delete Campaign", key="delete_campaign_button"):

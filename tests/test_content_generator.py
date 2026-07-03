@@ -4,6 +4,7 @@ from unittest.mock import AsyncMock, patch
 from utils.content_generator import (
     CHANNELS,
     _extract_json,
+    _normalize_angle,
     _parse_json,
     analyze_angles,
     generate_channel_content,
@@ -37,6 +38,65 @@ async def test_analyze_angles_parses_json(tmp_path):
         )
         assert result["recommended"] == 1
         assert len(result["angles"]) == 3
+
+
+def test_normalize_angle_converts_string_to_dict():
+    result = _normalize_angle("Simple Angle")
+    assert result == {
+        "name": "Simple Angle",
+        "description": "",
+        "rationale": "",
+        "conversion_potential": 5,
+    }
+
+
+def test_normalize_angle_fills_missing_fields():
+    result = _normalize_angle({"name": "Only Name"})
+    assert result["name"] == "Only Name"
+    assert result["description"] == ""
+    assert result["rationale"] == ""
+    assert result["conversion_potential"] == 5
+
+
+def test_normalize_angle_keeps_existing_fields():
+    result = _normalize_angle({
+        "name": "N",
+        "description": "D",
+        "rationale": "R",
+        "conversion_potential": 8,
+    })
+    assert result == {
+        "name": "N",
+        "description": "D",
+        "rationale": "R",
+        "conversion_potential": 8,
+    }
+
+
+@pytest.mark.asyncio
+async def test_analyze_angles_normalizes_string_angles(tmp_path):
+    prompt_dir = tmp_path / "prompts"
+    prompt_dir.mkdir()
+    prompt_file = prompt_dir / "angle_analyzer.json"
+    prompt_file.write_text(json.dumps({
+        "system": "sys",
+        "template": "Brief: {product_name}",
+        "output_format": {"type": "json"}
+    }))
+
+    fake_response = json.dumps({
+        "recommended": 0,
+        "angles": ["Angle A", "Angle B", "Angle C"],
+    })
+
+    with patch("utils.content_generator.generate_content", new=AsyncMock(return_value=fake_response)):
+        result = await analyze_angles(
+            {"product_name": "Widget"}, "OpenAI", "key", prompts_dir=str(prompt_dir)
+        )
+        assert result["recommended"] == 0
+        assert len(result["angles"]) == 3
+        assert all(isinstance(a, dict) for a in result["angles"])
+        assert result["angles"][0]["name"] == "Angle A"
 
 
 @pytest.mark.asyncio
