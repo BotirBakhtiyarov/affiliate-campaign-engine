@@ -1,6 +1,6 @@
 # Affiliate Campaign Engine
 
-A Streamlit web app for generating coordinated affiliate marketing content across 6 channels using OpenAI, Anthropic, DeepSeek, or Google Gemini.
+A Streamlit web app for generating coordinated affiliate marketing content across 6 channels using OpenAI, Anthropic, DeepSeek, Google Gemini, or Kimi.
 
 ## Features
 
@@ -52,6 +52,9 @@ api_key = "..."
 api_key = "..."
 
 [google]
+api_key = "..."
+
+[kimi]
 api_key = "..."
 ```
 

@@ -42,6 +42,14 @@ async def test_generate_content_dispatches_to_gemini():
 
 
 @pytest.mark.asyncio
+async def test_generate_content_dispatches_to_kimi():
+    with patch("utils.llm_clients.call_kimi", new=AsyncMock(return_value='{"ok": true}')) as mock:
+        result = await generate_content("hello", "Kimi", "fake-key")
+        assert result == '{"ok": true}'
+        mock.assert_awaited_once_with("hello", "fake-key", DEFAULT_MODELS["Kimi"])
+
+
+@pytest.mark.asyncio
 async def test_generate_content_uses_custom_model():
     with patch("utils.llm_clients.call_openai", new=AsyncMock(return_value='{"ok": true}')) as mock:
         await generate_content("hello", "OpenAI", "fake-key", model="gpt-4o-mini")

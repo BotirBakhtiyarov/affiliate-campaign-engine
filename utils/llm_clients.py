@@ -15,9 +15,11 @@ DEFAULT_MODELS = {
     "Anthropic": "claude-3-5-sonnet-20241022",
     "DeepSeek": "deepseek-chat",
     "Google": "gemini-1.5-pro",
+    "Kimi": "moonshot-v1-8k",
 }
 
 DEEPSEEK_BASE_URL = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com/v1")
+KIMI_BASE_URL = "https://api.moonshot.cn/v1"
 
 
 def _is_retryable(exc: Exception) -> bool:
@@ -147,6 +149,34 @@ async def call_gemini(prompt: str, api_key: str, model: str = DEFAULT_MODELS["Go
     return data["candidates"][0]["content"]["parts"][0]["text"]
 
 
+async def call_kimi(prompt: str, api_key: str, model: str = DEFAULT_MODELS["Kimi"]) -> str:
+    async def _request():
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.post(
+                f"{KIMI_BASE_URL}/chat/completions",
+                headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+                json={
+                    "model": model,
+                    "messages": [
+                        {"role": "system", "content": SYSTEM_PROMPT},
+                        {"role": "user", "content": prompt},
+                    ],
+                    "temperature": 0.7,
+                },
+            )
+            response.raise_for_status()
+            return response.json()
+
+    try:
+        data = await _with_retries(_request)
+    except Exception as exc:
+        raise ValueError(f"Kimi API call failed: {exc}") from exc
+
+    if not data.get("choices"):
+        raise ValueError("Kimi response missing choices")
+    return data["choices"][0]["message"]["content"]
+
+
 async def generate_content(
     prompt: str, provider: str, api_key: str, model: str | None = None
 ) -> str:
@@ -163,5 +193,7 @@ async def generate_content(
             return await call_deepseek(prompt, api_key, model)
         case "Google":
             return await call_gemini(prompt, api_key, model)
+        case "Kimi":
+            return await call_kimi(prompt, api_key, model)
         case _:
             raise ValueError(f"Unknown provider: {provider}")

@@ -3,7 +3,7 @@ from utils.async_helpers import run_async
 from utils.llm_clients import DEFAULT_MODELS, generate_content
 
 
-PROVIDERS = ["OpenAI", "Anthropic", "DeepSeek", "Google"]
+PROVIDERS = ["OpenAI", "Anthropic", "DeepSeek", "Google", "Kimi"]
 
 
 def _get_api_key_from_secrets(provider: str) -> str:
