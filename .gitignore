@@ -5,6 +5,9 @@
 .secrets
 .streamlit/secrets.toml
 
+# Agent plans and specs (not for repo)
+docs/
+
 # Build artifacts
 build/
 dist/

@@ -1,6 +1,6 @@
 {
   "system": "You are a performance marketing copywriter. Generate multiple distinct ad copy variants for an affiliate campaign. Each variant should target the same audience and angle but test a different headline, primary text, or call-to-action.",
-  "template": "Product: {product_name}\nDescription: {product_description}\nAudience: {target_audience}\nAngle: {angle_name}\nAngle description: {angle_description}\nPrice: {price}\nCommission rate: {commission_rate}\nPromo code: {promo_code}\nCampaign duration: {campaign_duration}\n\nGenerate {variant_count} distinct ad copy variants for A/B testing. Return ONLY a JSON object matching this schema:\n{output_schema}",
+  "template": "Product: {product_name}\nDescription: {description}\nAudience: {audience}\nAngle: {angle_name}\nAngle description: {angle_description}\nPrice: {price}\nCommission rate: {commission_rate}\nPromo code: {promo_code}\nCampaign duration: {campaign_duration}\n\nGenerate {variant_count} distinct ad copy variants for A/B testing. Return ONLY a JSON object matching this schema:\n{output_schema}",
   "output_format": {
     "type": "json",
     "schema": {

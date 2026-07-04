@@ -27,7 +27,8 @@ def generate_ads_csv(
 
     campaign_name = brief.get("product_name", "Campaign")
     ad_set_name = angle.get("name", "Default")
-    ads = content.get("Ad Copies", [])
+    ad_copies = content.get("ad_copies", {})
+    ads = ad_copies.get("ads", []) if isinstance(ad_copies, dict) else []
 
     for idx, ad in enumerate(ads, start=1):
         writer.writerow({
@@ -36,7 +37,7 @@ def generate_ads_csv(
             "ad_name": f"{campaign_name} Ad {idx}",
             "platform": "Meta",
             "headline": ad.get("headline", ""),
-            "primary_text": ad.get("body", ""),
+            "primary_text": ad.get("primary_text", ""),
             "description": ad.get("description", ""),
             "cta": ad.get("cta", ""),
             "destination_url": destination_url,

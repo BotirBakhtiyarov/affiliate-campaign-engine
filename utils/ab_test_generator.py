@@ -24,8 +24,8 @@ async def generate_ad_variants(
     output_schema = get_output_schema(prompt_data) or {}
     variables = {
         "product_name": brief.get("product_name", ""),
-        "product_description": brief.get("product_description", ""),
-        "target_audience": brief.get("target_audience", ""),
+        "description": brief.get("description", ""),
+        "audience": brief.get("audience", ""),
         "angle_name": angle.get("name", ""),
         "angle_description": angle.get("description", ""),
         "price": brief.get("price", ""),

@@ -8,6 +8,7 @@ from components.brief_form import render_brief_form
 from components.angle_selector import render_angle_selector
 from components.content_display import render_content_display
 from components.export_panel import render_export_panel
+from components.meta_publisher import render_meta_publisher
 from utils.async_helpers import run_async
 from utils.session_manager import init_session, save_campaign, delete_campaign
 from utils.ab_test_generator import generate_ad_variants
@@ -108,7 +109,15 @@ def main():
         ab_variants = st.session_state.get("ab_variants")
         edited_content = render_content_display(campaign["content"], ab_variants=ab_variants)
         campaign["content"] = edited_content
-        render_export_panel(campaign["brief"], campaign["angle"], campaign["content"])
+        utm_url = render_export_panel(campaign["brief"], campaign["angle"], campaign["content"])
+
+        st.markdown("---")
+        render_meta_publisher(
+            campaign["brief"],
+            campaign["angle"],
+            campaign["content"],
+            destination_url=utm_url,
+        )
 
 
 if __name__ == "__main__":

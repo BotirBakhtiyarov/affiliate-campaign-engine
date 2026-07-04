@@ -41,9 +41,9 @@ def _to_markdown(brief: dict[str, Any], angle: dict[str, Any] | None, campaign: 
         "",
         "## Brief",
         f"- **Product:** {brief.get('product_name', '')}",
-        f"- **Description:** {brief.get('product_description', '')}",
+        f"- **Description:** {brief.get('description', '')}",
         f"- **Price:** {brief.get('price', '')}",
-        f"- **Audience:** {brief.get('target_audience', '')}",
+        f"- **Audience:** {brief.get('audience', '')}",
         f"- **Commission:** {brief.get('commission_rate', '')}",
         f"- **Promo Code:** {brief.get('promo_code', '')}",
         f"- **Duration:** {brief.get('campaign_duration', '')}",
@@ -150,8 +150,11 @@ def _render_csv_export(
     )
 
 
-def render_export_panel(brief: dict[str, Any], angle: dict[str, Any] | None, campaign: dict[str, Any]) -> None:
-    """Render the export panel with Markdown download, UTM builder, and CSV export."""
+def render_export_panel(brief: dict[str, Any], angle: dict[str, Any] | None, campaign: dict[str, Any]) -> str:
+    """Render the export panel with Markdown download, UTM builder, and CSV export.
+
+    Returns the generated UTM URL, if any.
+    """
     st.header("📦 Export Campaign")
 
     markdown = _to_markdown(brief, angle, campaign)
@@ -169,3 +172,5 @@ def render_export_panel(brief: dict[str, Any], angle: dict[str, Any] | None, cam
 
     st.markdown("---")
     _render_csv_export(brief, angle, campaign, destination_url=utm_url or "")
+
+    return utm_url or ""

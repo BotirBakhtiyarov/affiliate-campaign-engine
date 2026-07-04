@@ -33,6 +33,32 @@ async def test_generate_ad_variants_returns_list(tmp_path):
 
 
 @pytest.mark.asyncio
+async def test_generate_ad_variants_uses_brief_form_keys(tmp_path):
+    """The brief form returns 'description' and 'audience', not the long forms."""
+    prompt_dir = tmp_path / "prompts"
+    prompt_dir.mkdir()
+    prompt_file = prompt_dir / "ad_variant_generator.json"
+    prompt_file.write_text(json.dumps({
+        "system": "sys",
+        "template": "Product: {product_name}\nDescription: {description}\nAudience: {audience}",
+        "output_format": {"type": "json"}
+    }))
+
+    fake_response = json.dumps({"variants": [{"variant_label": "A", "headline": "H", "primary_text": "B", "cta": "C"}]})
+
+    with patch("utils.ab_test_generator.generate_content", new=AsyncMock(return_value=fake_response)) as mock:
+        brief = {
+            "product_name": "EcoSip",
+            "description": "Eco-friendly bottle",
+            "audience": "office workers",
+        }
+        await generate_ad_variants(brief, {"name": "Angle"}, "OpenAI", "key", prompts_dir=str(prompt_dir))
+        prompt_arg = mock.await_args[0][0]
+        assert "Eco-friendly bottle" in prompt_arg
+        assert "office workers" in prompt_arg
+
+
+@pytest.mark.asyncio
 async def test_generate_ad_variants_normalizes_missing_fields(tmp_path):
     prompt_dir = tmp_path / "prompts"
     prompt_dir.mkdir()
