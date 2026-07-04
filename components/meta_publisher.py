@@ -2,7 +2,6 @@ from typing import Any
 
 import streamlit as st
 
-from utils.async_helpers import run_async
 from utils.meta_api import MetaPublisher, MetaPublisherError
 
 
@@ -51,10 +50,11 @@ def render_meta_publisher(
     if publisher.demo_mode:
         st.info("ℹ️ Demo mode: no real API calls will be made. Add a Meta access token and ad account ID to publish live.")
 
-    ad_copies = campaign.get("Ad Copies", [])
-    ad_copy = ad_copies[0] if ad_copies else {
+    ad_copies_data = campaign.get("ad_copies", {})
+    ads = ad_copies_data.get("ads", []) if isinstance(ad_copies_data, dict) else []
+    ad_copy = ads[0] if ads else {
         "headline": brief.get("product_name", "Ad"),
-        "body": brief.get("product_description", ""),
+        "primary_text": brief.get("description", ""),
         "cta": "Shop Now",
     }
 
@@ -68,24 +68,20 @@ def render_meta_publisher(
                 campaign_name = brief.get("product_name", "Campaign")
                 angle_name = angle.get("name", "Default") if angle else "Default"
 
-                created_campaign = run_async(publisher.create_campaign(campaign_name))
-                created_ad_set = run_async(
-                    publisher.create_ad_set(
-                        campaign_id=created_campaign["id"],
-                        name=f"{campaign_name} - {angle_name}",
-                        daily_budget_cents=int(daily_budget * 100),
-                        country=country,
-                    )
+                created_campaign = publisher.create_campaign(campaign_name)
+                created_ad_set = publisher.create_ad_set(
+                    campaign_id=created_campaign["id"],
+                    name=f"{campaign_name} - {angle_name}",
+                    daily_budget_cents=int(daily_budget * 100),
+                    country=country,
                 )
-                created_ad = run_async(
-                    publisher.create_ad(
-                        ad_set_id=created_ad_set["id"],
-                        name=f"{campaign_name} Ad 1",
-                        headline=ad_copy.get("headline", ""),
-                        primary_text=ad_copy.get("body", ""),
-                        cta=ad_copy.get("cta", "Shop Now"),
-                        destination_url=url or "https://example.com",
-                    )
+                created_ad = publisher.create_ad(
+                    ad_set_id=created_ad_set["id"],
+                    name=f"{campaign_name} Ad 1",
+                    headline=ad_copy.get("headline", ""),
+                    primary_text=ad_copy.get("primary_text", ""),
+                    cta=ad_copy.get("cta", "Shop Now"),
+                    destination_url=url or "https://example.com",
                 )
 
                 if created_campaign.get("demo_mode"):

@@ -5,7 +5,9 @@ from unittest.mock import MagicMock
 st_mock = MagicMock()
 sys.modules["streamlit"] = st_mock
 
-from components.export_panel import _to_markdown
+from unittest.mock import patch
+
+from components.export_panel import _to_markdown, render_export_panel
 
 
 def test_to_markdown_uses_brief_form_keys():
@@ -30,3 +32,15 @@ def test_to_markdown_uses_brief_form_keys():
     assert "office workers" in markdown
     assert "BPA-free" in markdown
     assert "Cheaper rivals" in markdown
+
+
+def test_render_export_panel_returns_utm_url():
+    """The UTM builder URL must be returned so Meta publisher can use it."""
+    with patch("components.export_panel._render_utm_builder", return_value="https://example.com?utm_source=meta"):
+        result = render_export_panel(
+            {"product_name": "EcoSip"},
+            {"name": "Sustainability"},
+            {},
+        )
+
+    assert result == "https://example.com?utm_source=meta"
